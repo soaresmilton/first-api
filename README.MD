@@ -18,14 +18,12 @@ Essa é uma API de contatos, criada com o intuito de fornecer os principais dado
 
 ```json
 {
-	{
-		nome: 'Milton',
-		sobrenome: 'Soares',
-		idade: 25,
-		telefone: 35998571018,
-		email: 'eng.milton.soares@gmail.com',
-		profissão: 'Desenvolvedor de Software',
-		preferências: ['Livros', 'Games', 'Coding', 'Filmes']
-	}
+		"name": "Milton",
+		"lastname": "Soares",
+		"age": 25,
+		"phone": 35998571018,
+		"email": "eng.milton.soares@gmail.com",
+		"role": "Desenvolvedor de Software'",
+  "preferences": ["Livros", "Games", "Coding", "Filmes"]
 }
 ```
