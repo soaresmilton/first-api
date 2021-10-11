@@ -24,6 +24,6 @@ Essa é uma API de contatos, criada com o intuito de fornecer os principais dado
 		"phone": 35998571018,
 		"email": "eng.milton.soares@gmail.com",
 		"role": "Desenvolvedor de Software'",
-  "preferences": ["Livros", "Games", "Coding", "Filmes"]
+    "preferences": ["Livros", "Games", "Coding", "Filmes"]
 }
 ```
