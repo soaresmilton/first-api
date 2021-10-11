@@ -18,6 +18,7 @@ Essa é uma API de contatos, criada com o intuito de fornecer os principais dado
 
 ```json
 {
+	{
 		nome: 'Milton',
 		sobrenome: 'Soares',
 		idade: 25,
@@ -25,5 +26,6 @@ Essa é uma API de contatos, criada com o intuito de fornecer os principais dado
 		email: 'eng.milton.soares@gmail.com',
 		profissão: 'Desenvolvedor de Software',
 		preferências: ['Livros', 'Games', 'Coding', 'Filmes']
+	}
 }
 ```
