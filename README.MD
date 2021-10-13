@@ -27,3 +27,16 @@ Essa é uma API de contatos, criada com o intuito de fornecer os principais dado
     "preferences": ["Livros", "Games", "Coding", "Filmes"]
 }
 ```
+
+## OBSERVAÇÕES E ANOTAÇÕES IMPORTANTES
+
+### 1 - Criando a rotas para listar usuários
+
+nessa especificação, o método end de uma resposta HTTP, sempre deverá receber seus dados  em formato de string. Por isso, utilizamos o JSON.stringify para transformar os dados em formato JSON para uma string.
+
+```jsx
+if(req.url === '/users' && req.method === 'GET') {
+	res.writeHead(200, { 'Content-Type': 'application/json' });
+	res.end(JSON.stringify(users));
+}
+```
