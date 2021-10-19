@@ -64,6 +64,8 @@ Essa é uma API de contatos, criada com o intuito de fornecer os principais dado
   }
 ```
 
+---
+
 ## OBSERVAÇÕES E ANOTAÇÕES IMPORTANTES
 
 ### 1 - Criando a primeira rota da API
@@ -76,6 +78,8 @@ if(req.url === '/users' && req.method === 'GET') {
 	res.end(JSON.stringify(users));
 }
 ```
+
+---
 
 ### 2 - Criando Controller de Usuários e Sistema de Rotas
 
@@ -140,6 +144,8 @@ const server = http.createServer((req, res) => {
 
 server.listen(3000, () => console.log('Server is running at http://localhost:3000'));
 ```
+
+---
 
 ### 3 - Query Params
 
@@ -209,6 +215,8 @@ module.exports = {
   }
 }
 ```
+
+---
 
 ### 4 - Recebendo parâmetros na URL
 
@@ -324,7 +332,9 @@ module.exports = {
 }
 ```
 
-### Criando o método response.send
+---
+
+### 5 - Criando o método response.send
 
 Nessa aula, o objetivo é refatorar a parte de envio de respostas para o cliente, visto que temos muita repetição de código no desenvolvimento da API.
 
