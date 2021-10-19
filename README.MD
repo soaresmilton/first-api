@@ -8,7 +8,11 @@ Esse repositório é construído com base no módulo 01 do curso JStack, da Dev 
 
 # Tecnologias usadas
 
+***A API criada nesse repositório utiliza somente métodos e módulos nativos do NODE.JS***
+
 - Node.js
+    - http
+    - URL
 
 ---
 
