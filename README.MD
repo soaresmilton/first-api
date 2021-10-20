@@ -155,7 +155,7 @@ Para isso, iremos utilizar do módulo nativo do node, chamado **URL.**
 
 o URL é uma classe que retorna um objeto com várias propriedades para manipulação da URL.
 
-![Untitled](https://s3-us-west-2.amazonaws.com/secure.notion-static.com/d8a3d87e-592c-4793-b2a5-4f72e34dd55a/Untitled.png)
+![Untitled](https://s3.us-west-2.amazonaws.com/secure.notion-static.com/d8a3d87e-592c-4793-b2a5-4f72e34dd55a/Untitled.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAT73L2G45O3KS52Y5%2F20211020%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20211020T195823Z&X-Amz-Expires=86400&X-Amz-Signature=0a1a141fee341b6a52fdc09dddb1c8551696a88cb8cc0847d4dc00f6d9019524&X-Amz-SignedHeaders=host&response-content-disposition=filename%20%3D%22Untitled.png%22)
 
 Log da classe URL descrita anteriormente.
 
@@ -425,3 +425,252 @@ module.exports = {
   }
 }
 ```
+
+### 6 - Capturando o Body das Requests
+
+Nesse ponto de desenvolvimento, nossa API já está praticamente pronta. Ela possui as seguintes funcionalidades:
+
+- Sistema de rotas ⇒ permite criar rotas de maneira organizada e simplificada
+- req.query ⇒ já consegue receber querys na URL, para executar alguma função específica. No caso dessa API, conseguimos ordenar a lista de usuários tomando como base o ID de cada user.
+- req.params ⇒ consegue receber parametros na URL. Nesse caso, conseguimos filtrar os usuários passando o número de seu ID na URL, retornando somente o usuário do ID especificado.
+
+Para finalizar a configuração da API, agora precisamos receber o body das requisições.
+
+Para isso, o primeiro passo é criar a rota com o método **POST** para que possamos enviar o conteúdo do corpo (body) das nossas requisições.
+
+Nessa rota, também iremos criar um handler exclusivo para manusear o Body de nossas requisições. Para isso, criaremos o método createUser no nosso UserController, que permitirá que criemos novos usuários na API.
+
+Nesse ponto, nossa **routes.js** ficou dessa maneira:
+
+```jsx
+const UserController = require('./controllers/UserController');
+
+// CADA OBJETO REPRESENTA UMA ROTA DA NOSSA API
+module.exports = [
+  {
+    endpoint: '/users',
+    method: 'GET',
+    handler: UserController.listUsers,
+  },
+
+  {
+    endpoint: '/users/:id',
+    method: 'GET',
+    handler: UserController.getUserById,
+  },
+
+  {
+    endpoint: '/users',
+    method: 'POST',
+    handler: UserController.createUser,
+  },
+];
+```
+
+A partir daqui, o próximo passo é criar a função createUser() no UserController.js. Podemos testar se nossa rota POST está funcionando, utilizando o Insomnia:
+
+![Untitled](https://s3.us-west-2.amazonaws.com/secure.notion-static.com/7e254b9f-d8e6-4256-b358-90cd3bfa5886/Untitled.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAT73L2G45O3KS52Y5%2F20211020%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20211020T195852Z&X-Amz-Expires=86400&X-Amz-Signature=8fc5b88fd290ca59fa250df179f50243e01a619e713c1cca718cd8d3ec82b850&X-Amz-SignedHeaders=host&response-content-disposition=filename%20%3D%22Untitled.png%22)
+
+Enviando um body no método POST do Create user. Nota-se que o status 200 na parte direita do Insomnia, indica que a requisição deu certo.
+
+Uma vez testado, podemos dar continuidade para implementar a funcionalidade que captura o texto do body da nossa req dentro da função createUser().
+
+Dessa forma. nosso arquivo **UserController.js** ficou da seguinte maneira:
+
+```jsx
+const users = require('../mocks/users');
+
+module.exports = {
+  listUsers(req, res) {
+    const { order } = req.query;
+    const sortedUsers = users.sort((a, b) => {
+      if (order === 'desc') {
+        return a.id < b.id ? 1 : -1;
+      }
+      return a.id > b.id ? 1 : -1;
+    });
+
+    res.send(200, sortedUsers);
+  },
+
+  getUserById(req, res) {
+    const { id } = req.params;
+    const user = users.find(user => user.id === Number(id));
+
+    if (!user) {
+      return res.send(400, { error: 'User not found' });
+    }
+
+    res.send(200, user);
+
+  },
+
+  createUser(req, res) {
+    let body = '';
+    req.on('data', (chunk) => {
+      body += chunk;
+    });
+
+    req.on('end', () => {
+      body = JSON.parse(body);
+
+      const lastUserId = users[users.length - 1].id;
+      const newUser = {
+        id: lastUserId + 1,
+        name: body.name,
+        age: body.age,
+        phone: body.phone,
+        email: body.email,
+        occupation: body.occupation,
+        preferences: body.preferences
+      }
+
+      users.push(newUser);
+
+      res.send(200, newUser);
+    })
+  }
+}
+```
+
+### 7 - Criando o helper BodyParser
+
+Para continuarmos com o desenvolvimento de nossa API, podemos elevar um pouco o nível e refatorar nosso código. Nesse ponto da aula, vamos criar uma função helper para evitar a duplicaçãod e código para cada requisição do tipo POST que quisermos criar futuramente.
+
+Para isso, primeiro passo é criar uma pasta dentro de src, chamada *helpers* e também um arquivo chamado bodyParser.js que será onde iremos implementar a função helper ⇒ /src/helpers/bodyParser.js
+
+Dentro do nosso arquivo bodyParser, iremos construir a lógica de captura de text do body no nosso método POST. Dessa forma, a função helper bodyParser dentro do file **bodyParser.js** fica da seguinte maneira:
+
+```jsx
+function bodyParser(req, callback) {
+  let body = '';
+  req.on('data', (chunk) => {
+    body += chunk;
+  });
+
+  req.on('end', () => {
+    body = JSON.parse(body);
+    req.body = body;
+    callback();
+  })
+}
+
+module.exports = bodyParser;
+```
+
+Continuando, no nosso arquivo **index.js**, iremos verificar se nossa req.method é igual a POST ou PUT. Quando for, podemos chamar nossa função bodyParser e executá-la para capturar o body da requisição.
+
+Nosso arquivo index.js ficará da seguinte forma:
+
+```jsx
+const http = require('http');
+const { URL } = require('url');
+
+const bodyParser = require('./helpers/bodyParser');
+const routes = require('./routes');
+
+const server = http.createServer((req, res) => {
+  const parsedUrl = new URL(`http://localhost:3000${req.url}`);
+
+  console.log(`Request method: ${req.method} | Endpoint: ${parsedUrl.pathname}`);
+
+  let { pathname } = parsedUrl;
+  let id = null;
+
+  const splitEndpoint = pathname.split('/').filter(Boolean);
+
+  if (splitEndpoint.length > 1) {
+    pathname = `/${splitEndpoint[0]}/:id`;
+    id = splitEndpoint[1];
+  }
+
+  const route = routes.find((routeObject) => (routeObject.endpoint === pathname && routeObject.method === req.method)
+  );
+
+  if (route) {
+    req.query = Object.fromEntries(parsedUrl.searchParams);
+    req.params = { id };
+
+    res.send = (statusCode, body) => {
+      res.writeHead(statusCode, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify(body));
+    }
+    
+    if (['POST', 'PUT'].includes(req.method)) {
+      bodyParser(req, () => route.handler(req, res))
+    } else {
+      route.handler(req, res);
+    }
+  } else {
+    res.writeHead(404, { 'Content-Type': 'text/html' });
+    res.end(`Cannot ${req.method}  ${parsedUrl.pathname}`);
+  }
+
+});
+
+server.listen(3000, () => console.log('Server is running at http://localhost:3000'));
+```
+
+Depois de configurar o index.js com a função bodyparser, devemos fazer as configurações necessárias no nosso **UserController.js**. Nesse arquivo, iremos refatorar a função createUser(), desestruturando uma constante chamada body vindo do body.req (criado no passo anterior dentro do arquivo **index.js**) e implementando somente a lógica de criação de um usuário na função.
+
+Dessa forma, nosso arquivo **UserController.js**, fica da seguinte forma:
+
+```jsx
+const users = require('../mocks/users');
+
+module.exports = {
+  listUsers(req, res) {
+    const { order } = req.query;
+    const sortedUsers = users.sort((a, b) => {
+      if (order === 'desc') {
+        return a.id < b.id ? 1 : -1;
+      }
+      return a.id > b.id ? 1 : -1;
+    });
+
+    res.send(200, sortedUsers);
+  },
+
+  getUserById(req, res) {
+    const { id } = req.params;
+    const user = users.find(user => user.id === Number(id));
+
+    if (!user) {
+      return res.send(400, { error: 'User not found' });
+    }
+
+    res.send(200, user);
+
+  },
+
+  createUser(req, res) {
+    const { body } = req;
+    const lastUserId = users[users.length - 1].id;
+    const newUser = {
+      id: lastUserId + 1,
+      name: body.name,
+      age: body.age,
+      phone: body.phone,
+      email: body.email,
+      occupation: body.occupation,
+      preferences: body.preferences
+    }
+
+    users.push(newUser);
+
+    res.send(200, newUser);
+  }
+}
+```
+
+![Untitled](https://s3.us-west-2.amazonaws.com/secure.notion-static.com/1bb935de-da56-4224-ad2b-28f42fbbbaad/Untitled.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAT73L2G45O3KS52Y5%2F20211020%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20211020T195935Z&X-Amz-Expires=86400&X-Amz-Signature=d7399d0b6ba15206fd2e0ad76778c8d123020950251ca8e2bbb257e8bfed3b08&X-Amz-SignedHeaders=host&response-content-disposition=filename%20%3D%22Untitled.png%22)
+
+Criando um novo usuário com o método POST, capturando seu body. No lado direito, o status code 200 informa que o request foi concluído com sucesso.
+
+![Untitled](https://s3.us-west-2.amazonaws.com/secure.notion-static.com/df791962-b3d8-4fa1-821f-4599ab7a36f1/Untitled.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAT73L2G45O3KS52Y5%2F20211020%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20211020T195944Z&X-Amz-Expires=86400&X-Amz-Signature=acce6c28b2054ec55d77853fae0a64532cb1a512f37111303bad7efe1dd3c5a5&X-Amz-SignedHeaders=host&response-content-disposition=filename%20%3D%22Untitled.png%22)
+
+Listando os usuários cadastrados com o método GET.
+
+### 8 - Rotas de Edição e Deleção
+
+Para finalizar nossa API, falta somente criar as rotas de edição e deleção, para conseguirmos alterar os dados dos usuários quando for necessário, bem como excluir algum usuário.
