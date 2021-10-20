@@ -812,4 +812,6 @@ module.exports = {
 }
 ```
 
-[Amazingly Simple Graphic Design Software - Canva](https://s3.us-west-2.amazonaws.com/secure.notion-static.com/6f8a115f-3440-45d1-8d43-ae83d1d4160e/apiWorking.mp4?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAT73L2G45O3KS52Y5%2F20211020%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20211020T204024Z&X-Amz-Expires=86400&X-Amz-Signature=6661ad2c47961fedf80ed0f07da50a4815476485d9f28d4a93b45eb668315feb&X-Amz-SignedHeaders=host&response-content-disposition=filename%20%3D%22apiWorking.mp4%22)
+<div align="center">
+<img src="assets/apiWorking250px.gif" alt="Api funcionando">
+</div>
