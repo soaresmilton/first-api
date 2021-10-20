@@ -813,5 +813,5 @@ module.exports = {
 ```
 
 <div align="center">
-<img src="assets/apiWorking250px.gif" alt="Api funcionando">
+<img src="assets/apiWorking.gif" alt="Api funcionando">
 </div>
