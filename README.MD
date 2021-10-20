@@ -1,5 +1,3 @@
-# Módulo Node JS
-
 # Criando a primeira API
 
 Esse repositório é construído com base no módulo 01 do curso JStack, da Dev Academy. Nosso objetivo, é criar uma API utilizando os recursos nativos do NODE.JS, de forma a aprender e entender os seus conceitos básicos para conseguir criar API's robustas no futuro.
@@ -674,3 +672,144 @@ Listando os usuários cadastrados com o método GET.
 ### 8 - Rotas de Edição e Deleção
 
 Para finalizar nossa API, falta somente criar as rotas de edição e deleção, para conseguirmos alterar os dados dos usuários quando for necessário, bem como excluir algum usuário.
+
+Primeiro passo é criar as rotas para PUT e DELETE, bem como suas respectivas funções handler. Nosso arquivo **routes.js:**
+
+```jsx
+const UserController = require('./controllers/UserController');
+
+// CADA OBJETO REPRESENTA UMA ROTA DA NOSSA API
+module.exports = [
+  {
+    endpoint: '/users',
+    method: 'GET',
+    handler: UserController.listUsers,
+  },
+
+  {
+    endpoint: '/users/:id',
+    method: 'GET',
+    handler: UserController.getUserById,
+  },
+
+  {
+    endpoint: '/users',
+    method: 'POST',
+    handler: UserController.createUser,
+  },
+
+  {
+    endpoint: '/users/:id',
+    method: 'PUT',
+    handler: UserController.updateUser,
+  },
+
+  {
+    endpoint: '/users/:id',
+    method: 'DELETE',
+    handler: UserController.deleteUser,
+  },
+];
+```
+
+E para finalizar, criamos a lógica pra faze o UPDATE dos usuários, que basicamente, identificamos o usuário a ser editado pelo seu número de ID e, as informações do usuário identificado são reescrevidas pelas novas informações que passamos pelo body da requisição.
+
+Já para a função de DELETE dos usuários, também identificamos o usuário pelo seu número de ID e, filtramos os usuários que não possuem o ID igual ao que deverá ser deletado.
+
+Dessa forma, nosso **UserController.js** fica da seguinte maneira:
+
+  
+
+```jsx
+let users = require('../mocks/users');
+
+module.exports = {
+  listUsers(req, res) {
+    const { order } = req.query;
+    const sortedUsers = users.sort((a, b) => {
+      if (order === 'desc') {
+        return a.id < b.id ? 1 : -1;
+      }
+      return a.id > b.id ? 1 : -1;
+    });
+
+    res.send(200, sortedUsers);
+  },
+
+  getUserById(req, res) {
+    const { id } = req.params;
+    const user = users.find(user => user.id === Number(id));
+
+    if (!user) {
+      return res.send(400, { error: 'User not found' });
+    }
+
+    res.send(200, user);
+
+  },
+
+  createUser(req, res) {
+    const { body } = req;
+    const lastUserId = users[users.length - 1].id;
+    const newUser = {
+      id: lastUserId + 1,
+      name: body.name,
+      age: body.age,
+      phone: body.phone,
+      email: body.email,
+      occupation: body.occupation,
+      preferences: body.preferences
+    }
+
+    users.push(newUser);
+
+    res.send(200, newUser);
+  },
+
+  updateUser(req, res) {
+    let { id } = req.params;
+    const { name } = req.body;
+    const { age } = req.body;
+    const { phone } = req.body;
+    const { email } = req.body;
+    const { occupation } = req.body;
+    const { preferences } = req.body;
+
+    id = Number(id);
+
+    const userExists = users.find(user => user.id === id);
+    if (!userExists) {
+      return res.send(400, { error: 'User not found' })
+    }
+
+    users = users.map(user => {
+      if (user.id === id) {
+        return {
+          ...user,
+          name,
+          age,
+          phone,
+          email,
+          occupation,
+          preferences
+        }
+      }
+
+      return user;
+    });
+
+    res.send(200, { id, name, age, phone, email, occupation, preferences });
+  },
+
+  deleteUser(req, res) {
+    let { id } = req.params;
+    id = Number(id);
+
+    users = users.filter(user => user.id !== id);
+    res.send(200, { deleted: true });
+
+  }
+}
+```
+
+[Amazingly Simple Graphic Design Software - Canva](https://s3.us-west-2.amazonaws.com/secure.notion-static.com/6f8a115f-3440-45d1-8d43-ae83d1d4160e/apiWorking.mp4?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAT73L2G45O3KS52Y5%2F20211020%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20211020T204024Z&X-Amz-Expires=86400&X-Amz-Signature=6661ad2c47961fedf80ed0f07da50a4815476485d9f28d4a93b45eb668315feb&X-Amz-SignedHeaders=host&response-content-disposition=filename%20%3D%22apiWorking.mp4%22)
